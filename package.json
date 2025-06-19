@@ -1,0 +1,27 @@
+{
+  "name": "propositional-truth-table",
+  "version": "1.0.0",
+  "description": "A project to display truth tables for propositional logic formulas.",
+  "main": "src/index.ts",
+  "scripts": {
+    "start": "nodemon src/index.ts"
+  },
+  "dependencies": {
+    "typescript": "^4.0.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.0",
+    "ts-node": "^10.9.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/propositional-truth-table.git"
+  },
+  "keywords": [
+    "propositional",
+    "logic",
+    "truth table"
+  ],
+  "author": "Your Name",
+  "license": "MIT"
+}
