@@ -13,13 +13,13 @@ const rl = readline.createInterface({
 //         const formula = parseFormula(input);
 //         // const truthTable = generateTruthTable(input, formula);
 //         // console.log(truthTable);
-        
+
 //         promptUser(); // Prompt again for another formula
 //     });
 // };
 
 console.log('Welcome to the Propositional Logic Truth Table Generator!');
-const formula1String = ' ¬ x ∧ y'
+// const formula1String = ' ¬ x ∧ y'
 // for (let x = 0; x < 2; x++) {
 //     for (let y = 0; y < 2; y++) {
 //         console.log(`x: ${x}, y: ${y}`);
@@ -38,4 +38,23 @@ for (let a = 0; a < 2; a++) {
     }
     console.log('-------------------');
 }
-
+console.log('-- Next Formula --');
+const formula3String = '¬ (a ∧ y’) ∧ ¬ (¬ a ∧ ¬ y’)'
+for (let a = 0; a < 2; a++) {
+    for (let y = 0; y < 2; y++) {
+        console.log(`a: ${a}, y: ${y}`);
+        const formula1 = !(a && y) && !(!a && !y); // Example evaluation logic for the given formula
+        console.log(`Formula: ${formula3String} => Result: ${formula1 ? '1' : '0'}`);
+    }
+    console.log('-------------------');
+}
+console.log('-- Next Formula --');
+const formula4String = '¬ (a ∧ y’) ∧ ¬ (¬ a ∧ ¬ y’)'
+for (let a = 0; a < 2; a++) {
+    for (let y = 0; y < 2; y++) {
+        console.log(`a: ${a}, y: ${y}`);
+        const formula1 = !(a && y) && !(!a && !y); // Example evaluation logic for the given formula
+        console.log(`Formula: ${formula4String} => Result: ${formula1 ? '1' : '0'}`);
+    }
+    console.log('-------------------');
+}
