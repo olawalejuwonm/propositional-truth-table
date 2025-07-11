@@ -1,6 +1,12 @@
-export function generateTruthTable(input: string, formula: any): string {
-    // Extract variables from the original input string
-    const variables: string[] = Array.from(new Set(input.match(/[A-Z]/g) || []));
+export function generateTruthTable(formulaTokens: any[]): string {
+    // Extract variable names from parsed tokens
+    const variables: string[] = Array.from(
+        new Set(
+            formulaTokens
+                .filter(token => token.type === 'variable')
+                .map(token => token.value)
+        )
+    );
     const numRows = 2 ** variables.length;
     let truthTable = '';
 
@@ -11,17 +17,18 @@ export function generateTruthTable(input: string, formula: any): string {
     // Generate rows
     for (let i = 0; i < numRows; i++) {
         const row: { [key: string]: boolean } = {};
-        
+
         // Assign truth values to variables
-        variables.forEach((variable: string, index: number) => {
+        variables.forEach((variable, index) => {
             row[variable] = Boolean((i >> (variables.length - 1 - index)) & 1);
         });
 
-        // Evaluate the formula (this is a placeholder for actual evaluation logic)
-        const result = evaluateFormula(formula, row);
-        
-        // Format the row for output
-        truthTable += variables.map((v: string) => (row[v] ? 'T' : 'F')).join(' | ') + ' | ' + (result ? 'T' : 'F') + '\n';
+        // Evaluate the formula (placeholder logic)
+        const result = evaluateFormula(formulaTokens, row);
+
+        // Format the row
+        truthTable += variables.map(v => (row[v] ? 'T' : 'F')).join(' | ')
+            + ' | ' + (result ? 'T' : 'F') + '\n';
     }
 
     return truthTable;

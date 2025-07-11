@@ -1,5 +1,7 @@
 export function parseFormula(formula: string): any {
-    // Basic parsing logic for propositional logic formulas
+    // Normalize logical symbols to ASCII equivalents
+    formula = formula.replace(/¬/g, '!').replace(/[∧^]/g, '&').replace(/[∨V]/g, '|');
+    // Tokenize formula for parsing (variables, &, |, !, parentheses)
     const tokens = formula.match(/\w+|[&|!()]/g);
     if (!tokens) {
         throw new Error("Invalid formula");
