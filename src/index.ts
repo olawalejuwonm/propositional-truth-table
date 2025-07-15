@@ -1,11 +1,11 @@
 // src/index.ts
-import * as readline from 'readline';
-import { parseFormula } from './logic/parser';
-import { generateTruthTable } from './logic/truthTable';
+import * as readline from "readline";
+import { parseFormula } from "./logic/parser";
+import { generateTruthTable } from "./logic/truthTable";
 
 const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout
+  input: process.stdin,
+  output: process.stdout,
 });
 
 // const promptUser = () => {
@@ -18,7 +18,7 @@ const rl = readline.createInterface({
 //     });
 // };
 
-console.log('Welcome to the Propositional Logic Truth Table Generator!');
+console.log("Welcome to the Propositional Logic Truth Table Generator!");
 // const formula1String = ' ¬ x ∧ y'
 // for (let x = 0; x < 2; x++) {
 //     for (let y = 0; y < 2; y++) {
@@ -29,7 +29,7 @@ console.log('Welcome to the Propositional Logic Truth Table Generator!');
 //     console.log('-------------------');
 // }
 
-const formula2String = ' a ⊕ y'
+const formula2String = " a ⊕ y";
 // for (let a = 0; a < 2; a++) {
 //     for (let y = 0; y < 2; y++) {
 //         console.log(`a: ${a}, y: ${y}`);
@@ -108,9 +108,9 @@ const formula2String = ' a ⊕ y'
 
 let isSame = null; // Flag to check if the formula holds for all combinations
 const convertNum1and0ToBoolean = (num: number): boolean => {
-    return num === 1;
-}
-const formula8String = 'i ∨ (¬ s ∧ b)'; // Example formula
+  return num === 1;
+};
+const formula8String = "i ∨ (¬ s ∧ b)"; // Example formula
 // for (let iN = 0; iN < 2; iN++) {
 //     for (let sN = 0; sN < 2; sN++) {
 //         for (let bN = 0; bN < 2; bN++) {
@@ -131,13 +131,13 @@ const formula8String = 'i ∨ (¬ s ∧ b)'; // Example formula
 //                 isSame = false; // If it doesn't hold, reset the flag
 //                 break; // If it doesn't hold, break the loop
 //             }
-//             // const formula2 =  !b && s; 
+//             // const formula2 =  !b && s;
 //             // console.log(`Formula: ${`¬ b ∧ s`} => Result: ${formula2 ? '1' : '0'}`);
 //         }
 //     }
 //     console.log('-------------------');
 // }
-const formula9String = '¬(¬ b V s)'; // Example formula
+const formula9String = "¬(¬ b V s)"; // Example formula
 // for (let bN = 0; bN < 2; bN++) {
 //     for (let sN = 0; sN < 2; sN++) {
 //         let b = convertNum1and0ToBoolean(bN);
@@ -208,15 +208,98 @@ const formula9String = '¬(¬ b V s)'; // Example formula
 // console.log('-- Next Formula --');
 
 // confirm if (¬ request ∧ button ^ ¬ old_sl) and ((¬ request ∧ button) ^ ¬ old_sl)) are equivalent
-rl.question('Enter a propositional logic formula: ', (input) => {
-    try {
-        const formulaTokens = parseFormula(input);
-        const truthTable = generateTruthTable(formulaTokens);
-        console.log(truthTable);
-    } catch (error) {
-        if (error instanceof Error) console.error('Error parsing formula:', error.message);
-        else console.error('Error parsing formula:', error);
-    } finally {
-        rl.close();
+
+const parseFormulaDirectly = (input: string) => {
+  // Clean the input first
+  let cleanInput = input.trim();
+
+  // Replace logic symbols step by step to avoid conflicts
+
+  // replace  /\  with  &&
+    cleanInput = cleanInput.replace(/\/\\/g, "&&"); // replace /\ with &&
+    cleanInput = cleanInput.replace(/’/g, ""); // Remove Unicode apostrophes used as complement notation
+  cleanInput = cleanInput.replace(/¬/g, "!");
+  cleanInput = cleanInput.replace(/∧/g, "&&");
+  cleanInput = cleanInput.replace(/∨/g, "||");
+  cleanInput = cleanInput.replace(/\^/g, "&&");
+  cleanInput = cleanInput.replace(/\bV\b/g, "||");
+
+  // Remove extra spaces
+  cleanInput = cleanInput.replace(/\s+/g, " ").trim();
+
+  console.log("Input:", input);
+  console.log("Cleaned:", cleanInput);
+
+  // Extract variables only from the original input (before symbol replacement)
+  const variables = input.match(/\b[a-zA-Z_][a-zA-Z0-9_]*\b/g) || [];
+  const uniqueVariables = Array.from(new Set(variables));
+
+  return { parsedFormula: cleanInput, variables: uniqueVariables };
+};
+
+const truthValues = (input: { parsedFormula: string; variables: string[] }) => {
+  const { parsedFormula, variables } = input;
+  // for each variable in variables, generate nested loops
+  // const numRows = 2 ** variables.length;
+  // iterate through each row in variables
+  const alreadyEvaluated: { [key: string]: boolean } = {};
+  let rowCount = 0;
+  console.log(
+    `Starting evaluation for formula: ${parsedFormula} which should have total rows: ${
+      2 ** variables.length
+    }`
+  );
+  variables.forEach((variable) => {
+    console.log(`Variable: ${variable}`);
+    for (let i = 0; i < 2; i++) {
+      const value = i === 1;
+      console.log(`  ${variable}: ${value}`);
+      // insert the variable value into the formula and let other variables be false
+      const variableRegex = new RegExp(`\\b${variable}\\b`, "g");
+      // Start with the original formula for each assignment
+      let formulaWithValues = parsedFormula.replace(
+        variableRegex,
+        value ? "true" : "false"
+      );
+      // other variables should be false
+      for (const otherVariable of variables) {
+        if (otherVariable !== variable) {
+          const otherVariableRegex = new RegExp(`\\b${otherVariable}\\b`, "g");
+          formulaWithValues = formulaWithValues.replace(
+            otherVariableRegex,
+            "false"
+          );
+        }
+      }
+      console.log(`  Formula with values: ${formulaWithValues}`);
+      // check if the variable key exists in the alreadyEvaluated
+      if (!alreadyEvaluated.hasOwnProperty(formulaWithValues)) {
+        const result = eval(formulaWithValues);
+        console.log(`  Row ${++rowCount}: ${variable} = ${value}, Result: ${result}`);
+        alreadyEvaluated[variable] = value;
+      }
+      // Evaluate the formula with the current variable value
+      // try {
+
+      // } catch (error) {
+      //     console.error(`  Error evaluating formula: ${error}`, error);
+      // }
     }
+  });
+  // console.log(truthTable);
+};
+
+rl.question("\n\nEnter a propositional logic formula: \n\n", function handleInput(input) {
+  try {
+    const formulaTokens = parseFormulaDirectly(input);
+    console.log("Formula Tokens", formulaTokens);
+    truthValues(formulaTokens);
+  } catch (error) {
+    if (error instanceof Error)
+      console.error("Error parsing formula:", error.message);
+    else console.error("Error parsing formula:", error);
+  } finally {
+    // Ask for the next formula after evaluation
+    rl.question("\n\nEnter a propositional logic formula: ", handleInput);
+  }
 });
