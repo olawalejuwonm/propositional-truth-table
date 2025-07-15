@@ -246,6 +246,7 @@ const truthValues = (input: { parsedFormula: string; variables: string[] }) => {
   );
 
   const alreadySingString = new Array<string>();
+  const allResults: boolean[] = [];
 
   for (let i = 0; i < numRows; i++) {
     // Generate a truth assignment for each variable
@@ -291,6 +292,7 @@ const truthValues = (input: { parsedFormula: string; variables: string[] }) => {
     let result = false;
     try {
       result = eval(formulaWithValues);
+      allResults.push(result);
     } catch (error) {
       console.error(`  Error evaluating formula: ${error}`, error);
     }
@@ -300,6 +302,8 @@ const truthValues = (input: { parsedFormula: string; variables: string[] }) => {
       .map((v) => `${v}=${assignment[v].toString()}`)
       .join(", ");
     console.log(`Row ${++rowCount}: ${assignmentStr}, Result: ${result}`);
+    // Print the result of the evaluation
+    console.log(`All Results: ${JSON.stringify(allResults)}`);
   }
 };
 
