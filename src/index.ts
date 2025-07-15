@@ -308,8 +308,13 @@ const truthValues = (input: { parsedFormula: string; variables: string[] }) => {
 };
 
 rl.question(
-  "\n\nEnter a propositional logic formula:",
+  "\n\nEnter a propositional logic formula (or type 'exit' to quit): ",
   function handleInput(input) {
+    if (input.trim().toLowerCase() === "exit") {
+      console.log("Goodbye!");
+      rl.close();
+      return;
+    }
     try {
       const formulaTokens = parseFormulaDirectly(input);
       console.log("Formula Tokens", formulaTokens);
@@ -320,7 +325,10 @@ rl.question(
       else console.error("Error parsing formula:", error);
     } finally {
       // Ask for the next formula after evaluation
-      rl.question("\n\nEnter a propositional logic formula: ", handleInput);
+      rl.question(
+        "\n\nEnter a propositional logic formula (or type 'exit' to quit): ",
+        handleInput
+      );
     }
   }
 );
