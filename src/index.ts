@@ -216,8 +216,8 @@ const parseFormulaDirectly = (input: string) => {
   // Replace logic symbols step by step to avoid conflicts
 
   // replace  /\  with  &&
-    cleanInput = cleanInput.replace(/\/\\/g, "&&"); // replace /\ with &&
-    cleanInput = cleanInput.replace(/’/g, ""); // Remove Unicode apostrophes used as complement notation
+  cleanInput = cleanInput.replace(/\/\\/g, "&&"); // replace /\ with &&
+  cleanInput = cleanInput.replace(/’/g, ""); // Remove Unicode apostrophes used as complement notation
   cleanInput = cleanInput.replace(/¬/g, "!");
   cleanInput = cleanInput.replace(/∧/g, "&&");
   cleanInput = cleanInput.replace(/∨/g, "||");
@@ -239,67 +239,84 @@ const parseFormulaDirectly = (input: string) => {
 
 const truthValues = (input: { parsedFormula: string; variables: string[] }) => {
   const { parsedFormula, variables } = input;
-  // for each variable in variables, generate nested loops
-  // const numRows = 2 ** variables.length;
-  // iterate through each row in variables
-  const alreadyEvaluated: { [key: string]: boolean } = {};
+  const numRows = 2 ** variables.length;
   let rowCount = 0;
   console.log(
-    `Starting evaluation for formula: ${parsedFormula} which should have total rows: ${
-      2 ** variables.length
-    }`
+    `Starting evaluation for formula: ${parsedFormula} which should have total rows: ${numRows}`
   );
-  variables.forEach((variable) => {
-    console.log(`Variable: ${variable}`);
-    for (let i = 0; i < 2; i++) {
-      const value = i === 1;
-      console.log(`  ${variable}: ${value}`);
-      // insert the variable value into the formula and let other variables be false
+
+  const alreadySingString = new Array<string>();
+
+  for (let i = 0; i < numRows; i++) {
+    // Generate a truth assignment for each variable
+    const assignment: { [key: string]: boolean } = {};
+    variables.forEach((variable, idx) => {
+      // It uses an integer i to represent a specific boolean assignment pattern
+      // For each variable at index idx in a variables array
+      // It calculates which bit position to check using variables.length - idx - 1
+      // It then tests if that bit in i is set to 1
+      // If the bit is 1, it assigns true to assignment[variable], otherwise false
+      assignment[variable] = !!(i & (1 << (variables.length - idx - 1)));
+    });
+    console.log("Current Assignment:", assignment);
+    // Check if the assignment has already been evaluated
+    const assignmentKey = JSON.stringify(assignment);
+
+    // alreadySingString.push(
+    //   JSON.stringify({
+    //     old_sh: false,
+    //     old_sl: false,
+    //     request: false,
+    //     button: false,
+    //   })
+    // );
+    // console.log("Already evaluated assignments:", alreadySingString);
+
+    if (alreadySingString.includes(assignmentKey)) {
+      throw new Error(`Already evaluated assignment: ${assignmentKey}`);
+    }
+    alreadySingString.push(assignmentKey); // Add the assignment to the array to avoid re-evaluation
+
+    // Replace variables in the formula with their assigned values
+    let formulaWithValues = parsedFormula;
+    for (const [variable, value] of Object.entries(assignment)) {
       const variableRegex = new RegExp(`\\b${variable}\\b`, "g");
-      // Start with the original formula for each assignment
-      let formulaWithValues = parsedFormula.replace(
+      formulaWithValues = formulaWithValues.replace(
         variableRegex,
         value ? "true" : "false"
       );
-      // other variables should be false
-      for (const otherVariable of variables) {
-        if (otherVariable !== variable) {
-          const otherVariableRegex = new RegExp(`\\b${otherVariable}\\b`, "g");
-          formulaWithValues = formulaWithValues.replace(
-            otherVariableRegex,
-            "false"
-          );
-        }
-      }
-      console.log(`  Formula with values: ${formulaWithValues}`);
-      // check if the variable key exists in the alreadyEvaluated
-      if (!alreadyEvaluated.hasOwnProperty(formulaWithValues)) {
-        const result = eval(formulaWithValues);
-        console.log(`  Row ${++rowCount}: ${variable} = ${value}, Result: ${result}`);
-        alreadyEvaluated[variable] = value;
-      }
-      // Evaluate the formula with the current variable value
-      // try {
-
-      // } catch (error) {
-      //     console.error(`  Error evaluating formula: ${error}`, error);
-      // }
     }
-  });
-  // console.log(truthTable);
+
+    // Evaluate the formula
+    let result = false;
+    try {
+      result = eval(formulaWithValues);
+    } catch (error) {
+      console.error(`  Error evaluating formula: ${error}`, error);
+    }
+
+    // Print the row
+    const assignmentStr = variables
+      .map((v) => `${v}=${assignment[v].toString()}`)
+      .join(", ");
+    console.log(`Row ${++rowCount}: ${assignmentStr}, Result: ${result}`);
+  }
 };
 
-rl.question("\n\nEnter a propositional logic formula: \n\n", function handleInput(input) {
-  try {
-    const formulaTokens = parseFormulaDirectly(input);
-    console.log("Formula Tokens", formulaTokens);
-    truthValues(formulaTokens);
-  } catch (error) {
-    if (error instanceof Error)
-      console.error("Error parsing formula:", error.message);
-    else console.error("Error parsing formula:", error);
-  } finally {
-    // Ask for the next formula after evaluation
-    rl.question("\n\nEnter a propositional logic formula: ", handleInput);
+rl.question(
+  "\n\nEnter a propositional logic formula:",
+  function handleInput(input) {
+    try {
+      const formulaTokens = parseFormulaDirectly(input);
+      console.log("Formula Tokens", formulaTokens);
+      truthValues(formulaTokens);
+    } catch (error) {
+      if (error instanceof Error)
+        console.error("Error parsing formula:", error.message);
+      else console.error("Error parsing formula:", error);
+    } finally {
+      // Ask for the next formula after evaluation
+      rl.question("\n\nEnter a propositional logic formula: ", handleInput);
+    }
   }
-});
+);
