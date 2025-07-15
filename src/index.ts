@@ -230,9 +230,10 @@ const parseFormulaDirectly = (input: string) => {
   console.log("Input:", input);
   console.log("Cleaned:", cleanInput);
 
-  // Extract variables only from the original input (before symbol replacement)
-  const variables = input.match(/\b[a-zA-Z_][a-zA-Z0-9_]*\b/g) || [];
-  const uniqueVariables = Array.from(new Set(variables));
+// Extract variables only from the original input (before symbol replacement)
+const variables = input.match(/\b[a-zA-Z_][a-zA-Z0-9_]*\b/g) || [];
+// Filter out 'V' as it's used as a logical OR operator
+const uniqueVariables = Array.from(new Set(variables.filter(v => v !== 'V')));
 
   return { parsedFormula: cleanInput, variables: uniqueVariables };
 };
@@ -303,9 +304,29 @@ const truthValues = (input: { parsedFormula: string; variables: string[] }) => {
       .join(", ");
     console.log(`Row ${++rowCount}: ${assignmentStr}, Result: ${result}`);
     // Print the result of the evaluation
-    console.log(`All Results: ${JSON.stringify(allResults)}`);
   }
+  console.log(`All Results: ${JSON.stringify(allResults)}`);
 };
+// develop a function that can compare two results arrays for equality
+function compareResultsArrays(arr1: boolean[], arr2: boolean[]): boolean {
+  if (arr1.length !== arr2.length) {
+    console.error("Arrays are of different lengths, cannot compare.");
+    return false;
+  } // Different lengths, cannot be equal
+  for (let i = 0; i < arr1.length; i++) {
+    if (arr1[i] !== arr2[i]) {
+      console.error(`Mismatch at index ${i}: ${arr1[i]} !== ${arr2[i]}`);
+      return false;
+    } // Found a mismatch
+  }
+  console.log("All elements match.");
+  return true; // All elements match
+}
+
+// Example usage of compareResultsArrays
+const results1 = [true,true,true,true,true,false,false,false,true,false,false,false,true,false,false,false];
+const results2 = [true,true,true,true,true,false,false,false,true,false,false,false,true,false,false,false];
+compareResultsArrays(results1, results2); // Should return true
 
 rl.question(
   "\n\nEnter a propositional logic formula (or type 'exit' to quit): ",
